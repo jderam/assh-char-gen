@@ -1,7 +1,4 @@
-import sys
 import pytest
-
-sys.path.append("..")
 import dice
 
 def test_dice_roll():
@@ -13,3 +10,4 @@ def test_dice_roll():
         rolls.append(dice.roll_ndn(1, 6))
     assert len([x for x in rolls if x < 1]) == 0
     assert len([x for x in rolls if x > 6]) == 0
+
