@@ -2,6 +2,7 @@ import dice
 import random
 from tables.ability_adj import adjustments, adj_descriptions
 from tables.class_info import class_info
+from tables.spells import assh_magician_spells, assh_cleric_spells
 
 
 def mod_to_str(mod: int) -> str:
@@ -68,6 +69,17 @@ class PlayerCharacter:
             return random.choice(list(stat_map.values()))
 
 
+    def _spell_list(self, char_class):
+        if char_class == 'Cleric':
+            spell_list = random.choices(assh_cleric_spells[1], k=3)
+        elif char_class == 'Magician':
+            spell_list = random.choices(assh_magician_spells[1], k=3)
+        else:
+            spell_list = []
+        spell_list.sort()
+        return spell_list
+
+
     def __init__(self):
         self.abilities = self._gen_abilities()
         self.ability_mods = self._lookup_mods(self.abilities)
@@ -79,6 +91,7 @@ class PlayerCharacter:
         self.ac = self.char_info['Armor']['AC'] + self.ability_mods['DEX'][1]
         self.base_save = 16
         self.save_mods = self.char_info['Saving Throws']
+        self.spell_list = self._spell_list(self.char_class)
 
 
     
@@ -99,3 +112,4 @@ if __name__ == '__main__':
     print(f"Saving Throw: {my_pc.base_save}")
     for k, v in my_pc.save_mods.items():
         print(f"   {k}: {v}")
+    print(f"Spells: {my_pc.spell_list}")

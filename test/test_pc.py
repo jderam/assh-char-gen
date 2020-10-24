@@ -29,3 +29,12 @@ def test_char_class(dummy_parameter):
         assert player_char.char_class == 'Magician'
     if player_char.best_stat == 'WIS':
         assert player_char.char_class == 'Cleric'
+
+@pytest.mark.parametrize("dummy_parameter", range(1000))
+def test_spell_list(dummy_parameter):
+    player_char = pc.PlayerCharacter()
+    if player_char.char_class in ['Cleric', 'Magician']:
+        assert len(player_char.spell_list) == 3
+    else:
+        assert len(player_char.spell_list) == 0
+
