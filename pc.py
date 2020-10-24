@@ -99,5 +99,3 @@ if __name__ == '__main__':
     print(f"Saving Throw: {my_pc.base_save}")
     for k, v in my_pc.save_mods.items():
         print(f"   {k}: {v}")
-    # print(f"Best Stat: {my_pc.best_stat}")
-
