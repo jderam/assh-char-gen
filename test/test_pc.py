@@ -34,7 +34,7 @@ def test_char_class(dummy_parameter):
 def test_spell_list(dummy_parameter):
     player_char = pc.PlayerCharacter()
     if player_char.char_class in ['Cleric', 'Magician']:
-        assert len(player_char.spell_list) == 3
+        assert len(set(player_char.spell_list)) == 3
     else:
         assert len(player_char.spell_list) == 0
 
