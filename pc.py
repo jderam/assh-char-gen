@@ -71,9 +71,9 @@ class PlayerCharacter:
 
     def _spell_list(self, char_class):
         if char_class == 'Cleric':
-            spell_list = random.choices(assh_cleric_spells[1], k=3)
+            spell_list = random.sample(assh_cleric_spells[1], k=3)
         elif char_class == 'Magician':
-            spell_list = random.choices(assh_magician_spells[1], k=3)
+            spell_list = random.sample(assh_magician_spells[1], k=3)
         else:
             spell_list = []
         spell_list.sort()
