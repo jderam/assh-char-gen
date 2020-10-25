@@ -27,46 +27,31 @@ class PlayerCharacter:
         return abilities
     
 
-    def _lookup_mods(self, abilities: dict) -> dict:
+    def _lookup_mods(self) -> dict:
         ability_mods = {}
-        for a in abilities.keys():
-            ability_mods[a] = adjustments[a][abilities[a]]
+        for a in self.abilities.keys():
+            ability_mods[a] = adjustments[a][self.abilities[a]]
         return ability_mods
 
 
-    def _get_best_stat(self, abilities: dict) -> str:
+    def _get_stats_ranked(self):
         """
         docstring
         """
-        top_score = 0
-        top_stats = []
-        for k, v in abilities.items():
-            if v == top_score:
-                top_stats.append(k)
-            elif v > top_score:
-                top_score = v
-                top_stats = [k]
-            else:
-                continue
-        if len(top_stats) > 1:
-            # give preference to something other than CHA/CON if possible
-            top_stats.sort()
-            return top_stats[-1]
-        else:
-            return top_stats[0]
+        stats_ranked = sorted(self.abilities, key=self.abilities.get, reverse=True)
+        return stats_ranked
 
 
-    def _determine_class(self, best_stat):
+    def _determine_class(self):
         stat_map = {
             'STR': 'Fighter',
             'DEX': 'Thief',
             'INT': 'Magician',
             'WIS': 'Cleric',
         }
-        if best_stat in stat_map.keys():
-            return stat_map[best_stat]
-        else:
-            return random.choice(list(stat_map.values()))
+        for s in self.stats_ranked:
+            if s in stat_map.keys():
+                return stat_map[s]
 
 
     def _spell_list(self):
@@ -102,9 +87,10 @@ class PlayerCharacter:
         self.magician_spell_src = magician_spell_src
 
         self.abilities = self._gen_abilities()
-        self.ability_mods = self._lookup_mods(self.abilities)
-        self.best_stat = self._get_best_stat(self.abilities)
-        self.char_class = self._determine_class(self.best_stat)
+        self.ability_mods = self._lookup_mods()
+        self.stats_ranked = self._get_stats_ranked()
+        self.best_stat = self.stats_ranked[0]
+        self.char_class = self._determine_class()
         self.char_info = class_info[self.char_class]
         self.hp = self.char_info['HD'] + self.ability_mods['CON'][0]
         self.fa = self.char_info['FA']
@@ -129,6 +115,9 @@ if __name__ == '__main__':
     print(f"Armor Worn: {my_pc.armor}")
     print(f"AC: {my_pc.ac}   DR: {my_pc.dr}   MV: {my_pc.mv}")
     print()
+    print(f"Abilities: {my_pc.abilities}")
+    print(f"Best Stat: {my_pc.best_stat}")
+    print(f"Stats Ranked: {my_pc.stats_ranked}")
     for k in my_pc.ability_mods.keys():
         print(f"{k}: {my_pc.abilities[k]}")
         for i in range(len(my_pc.ability_mods[k])):
@@ -139,3 +128,4 @@ if __name__ == '__main__':
         print(f"   {k}: {v}")
     print()
     print(f"Spells: {my_pc.spell_list}")
+    print()
