@@ -13,6 +13,11 @@ def mod_to_str(mod: int) -> str:
     return mod_str
 
 
+def dot_pad(s: str, chars: int) -> str:
+    n = chars - len(s)
+    return '.' * n
+
+
 class PlayerCharacter:
 
     def _gen_abilities(self):
@@ -74,6 +79,23 @@ class PlayerCharacter:
             pass
         spell_list.sort()
         return spell_list
+    
+
+    def _update_thief_abilities(self):
+        if self.abilities['DEX'] >= 16:
+            self.char_info['Class Abilities']['Thief Abilities']['Climb'] += 1
+            self.char_info['Class Abilities']['Thief Abilities']['Hide'] += 1
+            self.char_info['Class Abilities']['Thief Abilities']['Manipulate Traps'] += 1
+            self.char_info['Class Abilities']['Thief Abilities']['Move Silently'] += 1
+            self.char_info['Class Abilities']['Thief Abilities']['Open Locks'] += 1
+            self.char_info['Class Abilities']['Thief Abilities']['Pick Pockets'] += 1
+        if self.abilities['INT'] >= 16:
+            self.char_info['Class Abilities']['Thief Abilities']['Decipher Script'] += 1
+            # Cannot read scrolls until level 5
+            # self.char_info['Class Abilities']['Thief Abilities']['Read Scrolls'] += 1
+        if self.abilities['WIS'] >= 16:
+            self.char_info['Class Abilities']['Thief Abilities']['Discern Noise'] += 1
+        return
 
 
     def __init__(
@@ -101,6 +123,8 @@ class PlayerCharacter:
         self.base_save = 16
         self.save_mods = self.char_info['Saving Throws']
         self.spell_list = self._spell_list()
+        if self.char_class == 'Thief':
+            self._update_thief_abilities()
 
 
     
@@ -129,3 +153,8 @@ if __name__ == '__main__':
     print()
     print(f"Spells: {my_pc.spell_list}")
     print()
+    print(f"Class Abilities: {list(my_pc.char_info['Class Abilities'])}")
+    if my_pc.char_class == 'Thief':
+        print(my_pc.char_info['Class Abilities']['Thief Abilities'])
+        for k, v in my_pc.char_info['Class Abilities']['Thief Abilities'].items():
+            print(f"{k}{dot_pad(k,20)}{v}:12")
