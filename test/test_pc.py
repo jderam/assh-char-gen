@@ -38,3 +38,23 @@ def test_spell_list(dummy_parameter):
     else:
         assert len(player_char.spell_list) == 0
 
+
+def test_class_selection():
+    player_char = pc.PlayerCharacter()
+    if player_char.char_class == 'Fighter':
+        assert player_char.abilities['STR'] >= player_char.abilities['DEX']
+        assert player_char.abilities['STR'] >= player_char.abilities['INT']
+        assert player_char.abilities['STR'] >= player_char.abilities['WIS']
+    if player_char.char_class == 'Thief':
+        assert player_char.abilities['DEX'] >= player_char.abilities['STR']
+        assert player_char.abilities['DEX'] >= player_char.abilities['INT']
+        assert player_char.abilities['DEX'] >= player_char.abilities['WIS']
+    if player_char.char_class == 'Magician':
+        assert player_char.abilities['INT'] >= player_char.abilities['DEX']
+        assert player_char.abilities['INT'] >= player_char.abilities['STR']
+        assert player_char.abilities['INT'] >= player_char.abilities['WIS']
+    if player_char.char_class == 'Cleric':
+        assert player_char.abilities['WIS'] >= player_char.abilities['DEX']
+        assert player_char.abilities['WIS'] >= player_char.abilities['INT']
+        assert player_char.abilities['WIS'] >= player_char.abilities['STR']
+    
