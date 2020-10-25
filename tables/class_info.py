@@ -81,7 +81,7 @@ class_info = {
                 'Open Locks': 3,
                 'Pick Pockets': 4,
                 'Read Scrolls': '-',
-            }
+            },
         },
         'Alignment': 'Any, save Lawful Good',
         'Armor Allowed': 'Light',
