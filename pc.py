@@ -79,6 +79,59 @@ class PlayerCharacter:
         return alignment
 
 
+    def _stringify_save_mods(self):
+        for k, v in self.save_mods.items():
+            self.save_mods[k] = mod_to_str(v)
+        return
+
+
+    def _stringify_ability_mods(self):
+        mods_to_update = {
+            'STR': [0, 1],
+            'DEX': [0, 1],
+            'CON': [0, 1],
+            'WIS': [0],
+            'CHA': [0, 2],
+        }
+        for x in mods_to_update.keys():
+            for y in mods_to_update[x]:
+                self.ability_mods[x][y] = mod_to_str(self.ability_mods[x][y])
+        return
+
+
+    def _weapon_atk_and_dmg(self):
+        for i in range(len(self.char_info['Weapons'])):
+            # add +1 to atk and damage for mastery
+            if self.char_class == 'Fighter' and 'Mastery' in self.char_info['Weapons'][i]['Other']:
+                if self.char_info['Weapons'][i]['Range'] == '':
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.melee_atk + 1)
+                    self.char_info['Weapons'][i]['Damage'] = \
+                        f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg + 1)}"
+                else:
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.missile_atk + 1)
+                    self.char_info['Weapons'][i]['Damage'] = \
+                        f"{self.char_info['Weapons'][i]['Damage']}+1"
+            else:
+                if self.char_info['Weapons'][i]['Range'] == '':
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.melee_atk)
+                    if self.melee_dmg != 0:
+                        self.char_info['Weapons'][i]['Damage'] = \
+                            f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg)}"
+                elif 'Dagger' in self.char_info['Weapons'][i]['Name']:
+                    self.char_info['Weapons'][i]['Attack'] = \
+                        f"{mod_to_str(self.melee_atk)}/{mod_to_str(self.missile_atk)}"
+                    if self.melee_dmg != 0:
+                        self.char_info['Weapons'][i]['Damage'] = \
+                            f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg)}"
+                elif 'Sling' in self.char_info['Weapons'][i]['Name']:
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.missile_atk)
+                    if self.melee_dmg != 0:
+                        self.char_info['Weapons'][i]['Damage'] = \
+                            f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg)}"
+                else:
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.missile_atk)
+
+
     def _spell_list(self):
         spell_list = []
         if self.char_class == 'Cleric':
@@ -141,8 +194,14 @@ class PlayerCharacter:
         self.ac = self.char_info['Armor']['AC'] + self.ability_mods['DEX'][1]
         self.dr = self.char_info['Armor']['DR']
         self.mv = self.char_info['Armor']['MV']
+        self.melee_atk = self.fa + self.ability_mods['STR'][0]
+        self.missile_atk = self.fa + self.ability_mods['DEX'][0]
+        self.melee_dmg = self.ability_mods['STR'][1]
+        self._weapon_atk_and_dmg()
+        self._stringify_ability_mods()
         self.base_save = 16
         self.save_mods = self.char_info['Saving Throws']
+        self._stringify_save_mods()
         self.spell_list = self._spell_list()
         if self.char_class == 'Thief':
             self._update_thief_abilities()
@@ -185,7 +244,9 @@ if __name__ == '__main__':
         print(my_pc.char_info['Class Abilities']['Thief Abilities'])
         for k, v in my_pc.char_info['Class Abilities']['Thief Abilities'].items():
             print(f"{k}{dot_pad(k,20)}{v}:12")
-    print(my_pc.to_dict())
+    
+    from pprint import pprint
+    pprint(my_pc.to_dict())
     print()
-    print(my_pc.to_json())
+    # print(my_pc.to_json())
     print()
