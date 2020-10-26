@@ -1,6 +1,7 @@
 import dice
 import random
 import json
+from copy import deepcopy
 from tables.ability_adj import adjustments, adj_descriptions
 from tables.class_info import class_info
 from tables.spells import assh_magician_spells, assh_cleric_spells, dying_earth_spells
@@ -36,7 +37,7 @@ class PlayerCharacter:
     def _lookup_mods(self) -> dict:
         ability_mods = {}
         for a in self.abilities.keys():
-            ability_mods[a] = adjustments[a][self.abilities[a]]
+            ability_mods[a] = deepcopy(adjustments[a][self.abilities[a]])
         return ability_mods
 
 
@@ -187,9 +188,10 @@ class PlayerCharacter:
         self.best_stat = self.stats_ranked[0]
         self.char_class = self._determine_class()
         self.alignment = self._alignment()
-        self.char_info = class_info[self.char_class]
+        self.char_info = deepcopy(class_info[self.char_class])
         self.hp = self.char_info['HD'] + self.ability_mods['CON'][0]
         self.fa = self.char_info['FA']
+        self.fighting_ability = mod_to_str(self.fa)
         self.armor = self.char_info['Armor']['Type']
         self.ac = self.char_info['Armor']['AC'] + self.ability_mods['DEX'][1]
         self.dr = self.char_info['Armor']['DR']
