@@ -1,6 +1,7 @@
 import dice
 import random
 import json
+from copy import deepcopy
 from tables.ability_adj import adjustments, adj_descriptions
 from tables.class_info import class_info
 from tables.spells import assh_magician_spells, assh_cleric_spells, dying_earth_spells
@@ -36,7 +37,7 @@ class PlayerCharacter:
     def _lookup_mods(self) -> dict:
         ability_mods = {}
         for a in self.abilities.keys():
-            ability_mods[a] = adjustments[a][self.abilities[a]]
+            ability_mods[a] = deepcopy(adjustments[a][self.abilities[a]])
         return ability_mods
 
 
@@ -79,6 +80,59 @@ class PlayerCharacter:
         return alignment
 
 
+    def _stringify_save_mods(self):
+        for k, v in self.save_mods.items():
+            self.save_mods[k] = mod_to_str(v)
+        return
+
+
+    def _stringify_ability_mods(self):
+        mods_to_update = {
+            'STR': [0, 1],
+            'DEX': [0, 1],
+            'CON': [0, 1],
+            'WIS': [0],
+            'CHA': [0, 2],
+        }
+        for x in mods_to_update.keys():
+            for y in mods_to_update[x]:
+                self.ability_mods[x][y] = mod_to_str(self.ability_mods[x][y])
+        return
+
+
+    def _weapon_atk_and_dmg(self):
+        for i in range(len(self.char_info['Weapons'])):
+            # add +1 to atk and damage for mastery
+            if self.char_class == 'Fighter' and 'Mastery' in self.char_info['Weapons'][i]['Other']:
+                if self.char_info['Weapons'][i]['Range'] == '':
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.melee_atk + 1)
+                    self.char_info['Weapons'][i]['Damage'] = \
+                        f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg + 1)}"
+                else:
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.missile_atk + 1)
+                    self.char_info['Weapons'][i]['Damage'] = \
+                        f"{self.char_info['Weapons'][i]['Damage']}+1"
+            else:
+                if self.char_info['Weapons'][i]['Range'] == '':
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.melee_atk)
+                    if self.melee_dmg != 0:
+                        self.char_info['Weapons'][i]['Damage'] = \
+                            f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg)}"
+                elif 'Dagger' in self.char_info['Weapons'][i]['Name']:
+                    self.char_info['Weapons'][i]['Attack'] = \
+                        f"{mod_to_str(self.melee_atk)}/{mod_to_str(self.missile_atk)}"
+                    if self.melee_dmg != 0:
+                        self.char_info['Weapons'][i]['Damage'] = \
+                            f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg)}"
+                elif 'Sling' in self.char_info['Weapons'][i]['Name']:
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.missile_atk)
+                    if self.melee_dmg != 0:
+                        self.char_info['Weapons'][i]['Damage'] = \
+                            f"{self.char_info['Weapons'][i]['Damage']}{mod_to_str(self.melee_dmg)}"
+                else:
+                    self.char_info['Weapons'][i]['Attack'] = mod_to_str(self.missile_atk)
+
+
     def _spell_list(self):
         spell_list = []
         if self.char_class == 'Cleric':
@@ -118,6 +172,12 @@ class PlayerCharacter:
         return
 
 
+    def _format_thief_abilities(self):
+        for k, v in self.char_info['Class Abilities']['Thief Abilities'].items():
+            self.char_info['Class Abilities']['Thief Abilities'][k] = f"{v}:12" if v != '-' else v
+        return
+
+
     def __init__(
                  self,
                  class_choice='random',
@@ -134,18 +194,26 @@ class PlayerCharacter:
         self.best_stat = self.stats_ranked[0]
         self.char_class = self._determine_class()
         self.alignment = self._alignment()
-        self.char_info = class_info[self.char_class]
+        self.char_info = deepcopy(class_info[self.char_class])
         self.hp = self.char_info['HD'] + self.ability_mods['CON'][0]
         self.fa = self.char_info['FA']
+        self.fighting_ability = mod_to_str(self.fa)
         self.armor = self.char_info['Armor']['Type']
         self.ac = self.char_info['Armor']['AC'] + self.ability_mods['DEX'][1]
         self.dr = self.char_info['Armor']['DR']
         self.mv = self.char_info['Armor']['MV']
+        self.melee_atk = self.fa + self.ability_mods['STR'][0]
+        self.missile_atk = self.fa + self.ability_mods['DEX'][0]
+        self.melee_dmg = self.ability_mods['STR'][1]
+        self._weapon_atk_and_dmg()
+        self._stringify_ability_mods()
         self.base_save = 16
         self.save_mods = self.char_info['Saving Throws']
+        self._stringify_save_mods()
         self.spell_list = self._spell_list()
         if self.char_class == 'Thief':
             self._update_thief_abilities()
+            self._format_thief_abilities()
         
     def to_dict(self):
         char_dict = self.__dict__
@@ -158,34 +226,35 @@ class PlayerCharacter:
 
 if __name__ == '__main__':
     my_pc = PlayerCharacter(magician_spell_src='dying_earth')
-    print(f"Class: {my_pc.char_class}")
-    print(f"Alignment: {my_pc.alignment}")
-    print(f"Hit Points: {my_pc.hp}")
-    print(f"Fighting Ability: {mod_to_str(my_pc.fa)}")
-    print()
-    print(f"Armor Worn: {my_pc.armor}")
-    print(f"AC: {my_pc.ac}   DR: {my_pc.dr}   MV: {my_pc.mv}")
-    print()
-    print(f"Abilities: {my_pc.abilities}")
-    print(f"Best Stat: {my_pc.best_stat}")
-    print(f"Stats Ranked: {my_pc.stats_ranked}")
-    for k in my_pc.ability_mods.keys():
-        print(f"{k}: {my_pc.abilities[k]}")
-        for i in range(len(my_pc.ability_mods[k])):
-            print(f"   {adj_descriptions[k]['short'][i]}: {my_pc.ability_mods[k][i]}")
-        print()
-    print(f"Saving Throw: {my_pc.base_save}")
-    for k, v in my_pc.save_mods.items():
-        print(f"   {k}: {v}")
-    print()
-    print(f"Spells: {my_pc.spell_list}")
-    print()
-    print(f"Class Abilities: {list(my_pc.char_info['Class Abilities'])}")
-    if my_pc.char_class == 'Thief':
-        print(my_pc.char_info['Class Abilities']['Thief Abilities'])
-        for k, v in my_pc.char_info['Class Abilities']['Thief Abilities'].items():
-            print(f"{k}{dot_pad(k,20)}{v}:12")
-    print(my_pc.to_dict())
-    print()
-    print(my_pc.to_json())
-    print()
+    # print(f"Class: {my_pc.char_class}")
+    # print(f"Alignment: {my_pc.alignment}")
+    # print(f"Hit Points: {my_pc.hp}")
+    # print(f"Fighting Ability: {mod_to_str(my_pc.fa)}")
+    # print()
+    # print(f"Armor Worn: {my_pc.armor}")
+    # print(f"AC: {my_pc.ac}   DR: {my_pc.dr}   MV: {my_pc.mv}")
+    # print()
+    # print(f"Abilities: {my_pc.abilities}")
+    # print(f"Best Stat: {my_pc.best_stat}")
+    # print(f"Stats Ranked: {my_pc.stats_ranked}")
+    # for k in my_pc.ability_mods.keys():
+    #     print(f"{k}: {my_pc.abilities[k]}")
+    #     for i in range(len(my_pc.ability_mods[k])):
+    #         print(f"   {adj_descriptions[k]['short'][i]}: {my_pc.ability_mods[k][i]}")
+    #     print()
+    # print(f"Saving Throw: {my_pc.base_save}")
+    # for k, v in my_pc.save_mods.items():
+    #     print(f"   {k}: {v}")
+    # print()
+    # print(f"Spells: {my_pc.spell_list}")
+    # print()
+    # print(f"Class Abilities: {list(my_pc.char_info['Class Abilities'])}")
+    # if my_pc.char_class == 'Thief':
+    #     print(my_pc.char_info['Class Abilities']['Thief Abilities'])
+    #     for k, v in my_pc.char_info['Class Abilities']['Thief Abilities'].items():
+    #         print(f"{k}{dot_pad(k,20)}{v}:12")
+    from pprint import pprint
+    pprint(my_pc.to_dict())
+    # print()
+    # print(my_pc.to_json())
+    # print()
