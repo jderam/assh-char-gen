@@ -60,6 +60,25 @@ class PlayerCharacter:
                 return stat_map[s]
 
 
+    def _alignment(self):
+        alignments = [
+            'Neutral',
+            'Lawful Good',
+            'Chaotic Good',
+            'Lawful Evil',
+            'Chaotic Evil',
+        ]
+        weights = (50, 20, 20, 5, 5)
+        if self.char_class in ['Fighter', 'Magician', 'Cleric']:
+            alignment = random.choices(alignments, weights=weights)[0]
+        elif self.char_class == 'Thief':
+            weights = (50, 0, 30, 10, 10)
+            alignment = random.choices(alignments, weights=weights)[0]
+        else:
+            alignment = None
+        return alignment
+
+
     def _spell_list(self):
         spell_list = []
         if self.char_class == 'Cleric':
@@ -114,6 +133,7 @@ class PlayerCharacter:
         self.stats_ranked = self._get_stats_ranked()
         self.best_stat = self.stats_ranked[0]
         self.char_class = self._determine_class()
+        self.alignment = self._alignment()
         self.char_info = class_info[self.char_class]
         self.hp = self.char_info['HD'] + self.ability_mods['CON'][0]
         self.fa = self.char_info['FA']
@@ -139,6 +159,7 @@ class PlayerCharacter:
 if __name__ == '__main__':
     my_pc = PlayerCharacter(magician_spell_src='dying_earth')
     print(f"Class: {my_pc.char_class}")
+    print(f"Alignment: {my_pc.alignment}")
     print(f"Hit Points: {my_pc.hp}")
     print(f"Fighting Ability: {mod_to_str(my_pc.fa)}")
     print()
