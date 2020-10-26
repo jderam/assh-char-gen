@@ -1,5 +1,6 @@
 import dice
 import random
+import json
 from tables.ability_adj import adjustments, adj_descriptions
 from tables.class_info import class_info
 from tables.spells import assh_magician_spells, assh_cleric_spells, dying_earth_spells
@@ -125,9 +126,14 @@ class PlayerCharacter:
         self.spell_list = self._spell_list()
         if self.char_class == 'Thief':
             self._update_thief_abilities()
-
-
+        
+    def to_dict(self):
+        char_dict = self.__dict__
+        return char_dict
     
+    def to_json(self):
+        char_json = json.dumps(self.__dict__)
+        return char_json
 
 
 if __name__ == '__main__':
@@ -158,3 +164,7 @@ if __name__ == '__main__':
         print(my_pc.char_info['Class Abilities']['Thief Abilities'])
         for k, v in my_pc.char_info['Class Abilities']['Thief Abilities'].items():
             print(f"{k}{dot_pad(k,20)}{v}:12")
+    print(my_pc.to_dict())
+    print()
+    print(my_pc.to_json())
+    print()
