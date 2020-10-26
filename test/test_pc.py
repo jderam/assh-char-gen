@@ -91,5 +91,19 @@ def test_class_selection(dummy_parameter):
 #         else:
 #             assert player_char.char_info['Class Abilities']['Thief Abilities']['Discern Noise'] == 4
 
-        
+@pytest.mark.parametrize("dummy_parameter", range(1000))
+def test_alignment(dummy_parameter):
+    player_char = pc.PlayerCharacter()
+    alignments = [
+            'Neutral',
+            'Lawful Good',
+            'Chaotic Good',
+            'Lawful Evil',
+            'Chaotic Evil',
+        ]
+    assert player_char.alignment in alignments
+    if player_char.char_class == 'Thief':
+        assert player_char.alignment != 'Lawful Good'
+
+
 
