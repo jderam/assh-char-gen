@@ -54,6 +54,7 @@ class_info = {
             'wineskin (full)',
             'iron rations (7)',
         ],
+        'XP Next': 2000,
     },
     'Thief': {
         'HD': 6,
@@ -130,6 +131,7 @@ class_info = {
             'torches (2)',
             'iron rations (7)'
         ],
+        'XP Next': 1500,
     },
     'Magician': {
         'HD': 4,
@@ -203,6 +205,7 @@ class_info = {
             'standard rations (7)',
             'spell book',
         ],
+        'XP Next': 2500,
     },
     'Cleric': {
         'HD': 8,
@@ -261,5 +264,6 @@ class_info = {
             'holy water',
             'silver holy symbol',
         ],
+        'XP Next': 2000,
     },
 }
